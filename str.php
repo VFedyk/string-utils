@@ -2,27 +2,35 @@
 /**
  * String utils
  *
- * @version 0.0.1
+ * @version 0.0.2
  * @author Volodymyr Fedyk <volodymyr.fedyk@gmail.com>
  * @license http://opensource.org/licenses/BSD-3-Clause The BSD 3-Clause License
  */
 
-$result = FALSE;
+/**
+ * Constant on basic abstraction level
+ */
+define('INPUT_STRING', '%INPUT_STRING%');
 
 /**
  * Constants of operation types.
  */
-
 define('CASE_OPERATION', 1);
+define('STRINGLENGTH_OPERATION', 2);
 
 /**
  * Constants of operation options
  */
-
+define('DEFAULT_OPERATION_OPTION', 1);
 // Case operations
 define('UPPERCASE_OPERATION_OPTION', 1);
 define('LOWERCASE_OPERATION_OPTION', 2);
 define('TITLECASE_OPERATION_OPTION', 3);
+
+/**
+ * Initial setting for MB library
+ */
+mb_internal_encoding("UTF-8");
 
 /**
  * Mappings of operations and operation options
@@ -32,10 +40,27 @@ $map = array(
 		'label' => 'Changing case',
 		'multiple' => true,
 		'options' => array(
-			UPPERCASE_OPERATION_OPTION => 'Upper case',
-			LOWERCASE_OPERATION_OPTION => 'Lower case',
-			TITLECASE_OPERATION_OPTION => 'Title case',
+			UPPERCASE_OPERATION_OPTION => array(
+				'label' => 'Upper case',
+				'handler' => array('name' => 'mb_strtoupper',),
+			),
+
+			LOWERCASE_OPERATION_OPTION => array(
+				'label' => 'Lower case',
+				'handler' => array('name' => 'mb_strtolower'),
+			),
+			TITLECASE_OPERATION_OPTION => array(
+				'label' => 'Title case',
+				'handler' => array(
+					'name' => 'mb_convert_case',
+					'args' => array(INPUT_STRING, MB_CASE_TITLE),
+				),
+			),
 		)
+	),
+	STRINGLENGTH_OPERATION => array(
+		'label' => 'Length of input string',
+		'handler' => array('name' => 'mb_strlen',),
 	),
 );
 
@@ -57,7 +82,7 @@ function renderOptionBoxes($map, $selected_operation = null, $selected_operation
 		if ($operation_index == $selected_operation) {
 			$operation_code .= " checked='checked' ";
 		}
-		$operation_code .= "/>" . $operation['label'] . ": ";
+		$operation_code .= "/>" . $operation['label'];
 		if (isset($operation['multiple']) && $operation['multiple']) {
 			$operation_options = array();
 			foreach ($operation['options'] as $option_index => $operation_option) {
@@ -65,13 +90,13 @@ function renderOptionBoxes($map, $selected_operation = null, $selected_operation
 				if ($option_index == $selected_operation_option && $operation_index == $selected_operation) {
 					$option_code .= " selected='selected' ";
 				}
-				$option_code .= ">" . $operation_option . "</option>";
+				$option_code .= ">" . $operation_option['label'] . "</option>";
 
 				$operation_options[] = $option_code;
 			}
-			$operation_code .= "<select name='operation_option'>" . implode('', $operation_options) . "</select>";
+			$operation_code .= ": <select name='operation_option'>" . implode('', $operation_options) . "</select>";
 		}
-		$operation_boxes[] = "<label>" . $operation_code . "</label>";
+		$operation_boxes[] = "<label>" . $operation_code . "</label><br/>";
 	}
 
 	if ($out) {
@@ -79,42 +104,66 @@ function renderOptionBoxes($map, $selected_operation = null, $selected_operation
 	} else {
 		return $operation_boxes;
 	}
+}
 
+/**
+ * Gives control of handling input string by defined function in $map array
+ *
+ * @param array $map
+ * @param string $input_string
+ * @param int $selected_operation
+ * @param null|int $selected_operation_option
+ *
+ * @return bool|mixed
+ */
+function handleOperation($map, $input_string, $selected_operation, $selected_operation_option = null)
+{
+	if (!array_key_exists((int) $selected_operation, $map)) {
+		return false;
+	}
+
+	$mapped_operation = $map[$selected_operation];
+	$is_multiple = isset($mapped_operation['multiple']) && $mapped_operation['multiple'];
+
+	if($is_multiple && !array_key_exists($selected_operation_option, $mapped_operation['options'])) {
+		$selected_operation_option = DEFAULT_OPERATION_OPTION;
+	}
+
+	if ($is_multiple) {
+		$handler = $mapped_operation['options'][$selected_operation_option]['handler'];
+	} else {
+		$handler = $mapped_operation['handler'];
+	}
+
+	if (!isset($handler['args'])) {
+		$handler['args'][] = $input_string;
+	} else {
+		foreach($handler['args'] as &$arg) {
+			if($arg == INPUT_STRING) {
+				$arg = $input_string;
+			}
+		}
+	}
+
+	return call_user_func_array($handler['name'], $handler['args']);
 }
 
 /**
  * Main Logic start
  */
 
-/**
- * @todo Refactor this code
- */
 $operation = (isset($_POST['operation'])) ? $_POST['operation'] : FALSE;
 $operation_option = (isset($_POST['operation_option'])) ? $_POST['operation_option'] : FALSE;
 $input_string = (isset($_POST['input_string'])) ? $_POST['input_string'] : FALSE;
 
-if ($operation && $input_string) {
-	if ($operation == CASE_OPERATION) {
-		if ($operation_option == UPPERCASE_OPERATION_OPTION) {
-			$result = mb_strtoupper($input_string);
-		}
-
-		if ($operation_option == LOWERCASE_OPERATION_OPTION) {
-			$result = mb_strtolower($input_string);
-		}
-
-		if ($operation_option == TITLECASE_OPERATION_OPTION) {
-			$result = mb_convert_case($input_string, MB_CASE_TITLE);
-		}
-	}
-}
-
+$result = handleOperation($map, $input_string, $operation, $operation_option);
 $result = ($result) ? $result : (($input_string) ? 'Specify operation, please.' : 'Specify desired string and operation on it, please.');
 
 ?>
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
 	<title>String Operations</title>
 	<style type="text/css">
 		body{
