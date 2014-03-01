@@ -2,7 +2,7 @@
 /**
  * String utils
  *
- * @version 0.0.3
+ * @version 0.0.4
  * @author Volodymyr Fedyk <volodymyr.fedyk@gmail.com>
  * @license http://opensource.org/licenses/BSD-3-Clause The BSD 3-Clause License
  */
@@ -22,14 +22,13 @@ define('BASE64_OPERATION', 3);
 /**
  * Constants of operation options
  */
-define('DEFAULT_OPERATION_OPTION', 1);
 // Case operation options
-define('UPPER_CASE_OPERATION_OPTION', 2);
-define('LOWER_CASE_OPERATION_OPTION', 3);
-define('TITLE_CASE_OPERATION_OPTION', 4);
+define('UPPER_CASE_OPERATION_OPTION', 1);
+define('LOWER_CASE_OPERATION_OPTION', 2);
+define('TITLE_CASE_OPERATION_OPTION', 3);
 //Base64
-define('BASE64_ENCODE_OPERATION_OPTION', 5);
-define('BASE64_DECODE_OPERATION_OPTION', 6);
+define('BASE64_ENCODE_OPERATION_OPTION', 4);
+define('BASE64_DECODE_OPERATION_OPTION', 5);
 
 /**
  * Initial setting for MB library
@@ -144,7 +143,7 @@ function handleOperation($map, $input_string, $selected_operation, $selected_ope
 	$is_multiple = isset($mapped_operation['multiple']) && $mapped_operation['multiple'];
 
 	if($is_multiple && !array_key_exists($selected_operation_option, $mapped_operation['options'])) {
-		$selected_operation_option = DEFAULT_OPERATION_OPTION;
+		$selected_operation_option = reset(array_keys($mapped_operation['options']));
 	}
 
 	if ($is_multiple) {
