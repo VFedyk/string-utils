@@ -2,7 +2,7 @@
 /**
  * String utils
  *
- * @version 0.0.4
+ * @version 0.0.5
  * @author Volodymyr Fedyk <volodymyr.fedyk@gmail.com>
  * @license http://opensource.org/licenses/BSD-3-Clause The BSD 3-Clause License
  */
@@ -82,16 +82,16 @@ $map = array(
 );
 
 /**
- * Renders radiobuttons for operations and select boxes for operation options
+ * Renders radio-buttons for operations and select boxes for operation options
  *
  * @param array $map
- * @param null $operation
- * @param null $operation_option
- * @param bool $out
+ * @param null $selected_operation
+ * @param null $selected_operation_option
+ * @param bool $as_string
  *
- * @return void|array
+ * @return mixed
  */
-function renderOptionBoxes($map, $selected_operation = null, $selected_operation_option = null, $out = true)
+function renderOptionBoxes($map, $selected_operation = null, $selected_operation_option = null, $as_string = true)
 {
 	$operation_boxes = array();
 	foreach ($map as $operation_index => $operation) {
@@ -111,16 +111,18 @@ function renderOptionBoxes($map, $selected_operation = null, $selected_operation
 
 				$operation_options[] = $option_code;
 			}
-			$operation_code .= ": <select name='operation_option'>" . implode('', $operation_options) . "</select>";
+			$operation_code .= ": <select name='operation_option[" . $operation_index . "]'>" . implode('', $operation_options) . "</select>";
 		}
 		$operation_boxes[] = "<label>" . $operation_code . "</label><br/>";
 	}
 
-	if ($out) {
-		echo implode('', $operation_boxes);
+	if ($as_string) {
+		$result = implode('', $operation_boxes);
 	} else {
-		return $operation_boxes;
+		$result = $operation_boxes;
 	}
+
+	return $result;
 }
 
 /**
@@ -169,8 +171,8 @@ function handleOperation($map, $input_string, $selected_operation, $selected_ope
  * Main Logic start
  */
 
-$operation = (isset($_POST['operation'])) ? $_POST['operation'] : FALSE;
-$operation_option = (isset($_POST['operation_option'])) ? $_POST['operation_option'] : FALSE;
+$operation = (isset($_POST['operation'])) ? (int) $_POST['operation'] : FALSE;
+$operation_option = (isset($_POST['operation_option'][$operation])) ? (int) $_POST['operation_option'][$operation] : FALSE;
 $input_string = (isset($_POST['input_string'])) ? $_POST['input_string'] : FALSE;
 
 $result = handleOperation($map, $input_string, $operation, $operation_option);
@@ -206,7 +208,7 @@ $result = ($result) ? $result : (($input_string) ? 'Specify operation, please.' 
 	<div class="form-container">
 		<form method="POST">
 			<div>
-				<textarea name="input_string"><?php if($input_string) echo $input_string; ?></textarea>
+				<label><textarea name="input_string"><?php if($input_string) echo $input_string; ?></textarea></label>
 			</div>
 			<div>
 				<?= renderOptionBoxes($map, $operation, $operation_option); ?><br/>
