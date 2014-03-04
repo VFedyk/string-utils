@@ -2,7 +2,7 @@
 /**
  * String utils
  *
- * @version 0.0.5
+ * @version 0.0.6
  * @author Volodymyr Fedyk <volodymyr.fedyk@gmail.com>
  * @license http://opensource.org/licenses/BSD-3-Clause The BSD 3-Clause License
  */
@@ -18,6 +18,7 @@ define('INPUT_STRING', '%INPUT_STRING%');
 define('CASE_OPERATION', 1);
 define('STRING_LENGTH_OPERATION', 2);
 define('BASE64_OPERATION', 3);
+define('TRANSFORM_PHRASE_OPERATION', 4);
 
 /**
  * Constants of operation options
@@ -29,11 +30,42 @@ define('TITLE_CASE_OPERATION_OPTION', 3);
 //Base64
 define('BASE64_ENCODE_OPERATION_OPTION', 4);
 define('BASE64_DECODE_OPERATION_OPTION', 5);
+// Transform phrase options
+define('CAMELCASE_TRANSFORM_OPERATION_OPTION', 6);
+define('UNDERSCORE_TRANSFORM_OPERATION_OPTION', 7);
 
 /**
  * Initial setting for MB library
  */
 mb_internal_encoding("UTF-8");
+
+/**
+ * Custom operation option's handlers
+ */
+
+/**
+ * Camel-case transform operation option
+ *
+ * @param string $input_string
+ *
+ * @return string
+ */
+function camelcaseTransformOO($input_string)
+{
+	return str_replace(' ', '', mb_convert_case($input_string, MB_CASE_TITLE));
+}
+
+/**
+ * Underscore transform operation option
+ *
+ * @param string $input_string
+ *
+ * @return string
+ */
+function underscoreTransformOO($input_string)
+{
+	return str_replace(' ', '_', mb_convert_case($input_string, MB_CASE_LOWER));
+}
 
 /**
  * Mappings of operations and operation options
@@ -76,6 +108,20 @@ $map = array(
 			BASE64_DECODE_OPERATION_OPTION => array(
 				'label' => 'Decode',
 				'handler' => array('name' => 'base64_decode'),
+			)
+		)
+	),
+	TRANSFORM_PHRASE_OPERATION => array(
+		'label' => 'Transform phrase into',
+		'multiple' => true,
+		'options' => array(
+			CAMELCASE_TRANSFORM_OPERATION_OPTION => array(
+				'label' => 'camelcase string',
+				'handler' => array('name' => 'camelcaseTransformOO'),
+			),
+			UNDERSCORE_TRANSFORM_OPERATION_OPTION => array(
+				'label' => 'underscored string',
+				'handler' => array('name' => 'underscoreTransformOO'),
 			)
 		)
 	),
