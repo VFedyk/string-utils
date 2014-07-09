@@ -2,7 +2,7 @@
 /**
  * String utils
  *
- * @version 0.0.6
+ * @version 0.0.7
  * @author Volodymyr Fedyk <volodymyr.fedyk@gmail.com>
  * @license http://opensource.org/licenses/BSD-3-Clause The BSD 3-Clause License
  */
@@ -131,9 +131,9 @@ $map = array(
  * Renders radio-buttons for operations and select boxes for operation options
  *
  * @param array $map
- * @param null $selected_operation
- * @param null $selected_operation_option
- * @param bool $as_string
+ * @param null  $selected_operation
+ * @param null  $selected_operation_option
+ * @param bool  $as_string
  *
  * @return mixed
  */
@@ -174,9 +174,9 @@ function renderOptionBoxes($map, $selected_operation = null, $selected_operation
 /**
  * Gives control of handling input string by defined function in $map array
  *
- * @param array $map
- * @param string $input_string
- * @param int $selected_operation
+ * @param array    $map
+ * @param string   $input_string
+ * @param int      $selected_operation
  * @param null|int $selected_operation_option
  *
  * @return bool|mixed
@@ -249,7 +249,7 @@ $result = ($result) ? $result : (($input_string) ? 'Specify operation, please.' 
 <div class="wrapper">
 	<h1>String Utils</h1>
 	<div class="result">
-		<p><?= $result ?></p>
+		<pre><?= htmlspecialchars($result) ?></pre>
 	</div>
 	<div class="form-container">
 		<form method="POST">
